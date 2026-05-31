@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BS HUD</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0) !important;
+            background: rgba(0, 0, 0, 0) !important;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Cinematic Bars -->
+    <div id="cinematic-top" class="cinematic-bar top"></div>
+    <div id="cinematic-bottom" class="cinematic-bar bottom"></div>
+
+    <!-- Notifications Container -->
+    <div id="notifications-container" class="notifications-container"></div>
+
+    <div id="hud-container" class="hud-container">
+
+        <div class="hud-branding">
+            <img src="img/logo.png" alt="BS Logo" class="hud-logo">
+        </div>
+
+        <!-- Direction, Compass & GPS -->
+        <div class="direction-container">
+            <span class="street-name" id="street-name">Legion Square</span>
+            <span class="zone-name" id="zone-name">Downtown</span>
+            <div class="compass-wrapper">
+                <span class="compass-degree" id="compass-degree">0°</span>
+                <span class="compass-dir" id="compass-dir">N</span>
+            </div>
+            <div class="waypoint-row" id="waypoint-row" style="display:none;">
+                <span class="waypoint-dist" id="waypoint-distance">—</span>
+                <span class="waypoint-label">GPS</span>
+            </div>
+        </div>
+
+        <div class="status-bars-row">
+
+            <div class="status-bar" id="health-bar">
+                <div class="bar-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                </div>
+                <span class="bar-value" id="health-value">100</span>
+                <div class="bar-track">
+                    <div class="bar-fill health-fill" id="health-fill"></div>
+                </div>
+            </div>
+
+            <div class="status-bar" id="hunger-bar">
+                <div class="bar-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.1 13.34l2.83-2.83L3.91 3.5a4.008 4.008 0 000 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z" />
+                    </svg>
+                </div>
+                <span class="bar-value" id="hunger-value">100</span>
+                <div class="bar-track">
+                    <div class="bar-fill hunger-fill" id="hunger-fill"></div>
+                </div>
+            </div>
+
+            <div class="status-bar" id="thirst-bar">
+                <div class="bar-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8z" />
+                    </svg>
+                </div>
+                <span class="bar-value" id="thirst-value">100</span>
+                <div class="bar-track">
+                    <div class="bar-fill thirst-fill" id="thirst-fill"></div>
+                </div>
+            </div>
+
+            <div class="status-bar" id="oxygen-bar" style="display:none;">
+                <div class="bar-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 11.69a4.49 4.49 0 011.66-3.48c.84-.71 1.34-1.76 1.34-2.88 0-2.38-2.19-4.33-4.9-4.33S9.2 2.95 9.2 5.33c0 1.12.5 2.17 1.34 2.88A4.49 4.49 0 0112.2 11.7l-4.59 4.59a2.5 2.5 0 000 3.54 2.5 2.5 0 003.54 0l.4-.4v.61a2.5 2.5 0 002.5 2.5 2.5 2.5 0 002.5-2.5v-.62l.41.41a2.5 2.5 0 003.54 0 2.5 2.5 0 000-3.54l-4.5-4.6z"/>
+                    </svg>
+                </div>
+                <span class="bar-value" id="oxygen-value">100</span>
+                <div class="bar-track">
+                    <div class="bar-fill oxygen-fill" id="oxygen-fill"></div>
+                </div>
+            </div>
+
+            <div class="status-bar" id="armor-bar" style="display:none;">
+                <div class="bar-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                    </svg>
+                </div>
+                <span class="bar-value" id="armor-value">0</span>
+                <div class="bar-track">
+                    <div class="bar-fill armor-fill" id="armor-fill"></div>
+                </div>
+            </div>
+
+            <div class="status-bar" id="stress-bar" style="display:none;">
+                <div class="bar-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                    </svg>
+                </div>
+                <span class="bar-value" id="stress-value">0</span>
+                <div class="bar-track">
+                    <div class="bar-fill stress-fill" id="stress-fill"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="seatbelt-indicator off" id="seatbelt-indicator">
+            <span id="seatbelt-text">Nicht angeschnallt</span>
+        </div>
+
+        <div class="voice-bar-container" id="voice-bar-container">
+            <div class="mic-dot" id="mic-dot"></div>
+            <span class="voice-label">STIMME</span>
+            <div class="voice-segments">
+                <div class="voice-seg" id="voice-seg-1"></div>
+                <div class="voice-seg" id="voice-seg-2"></div>
+                <div class="voice-seg" id="voice-seg-3"></div>
+            </div>
+            <span class="voice-mode-text" id="voice-mode-text">Normal</span>
+        </div>
+
+    </div>
+
+    <div id="speedo-container" class="speedo-container" style="display:none;">
+        <div class="speedo-glass">
+            <div class="speedo-speed">
+                <span class="speedo-number" id="speedo-speed">0</span>
+                <span class="speedo-unit">KM/H</span>
+            </div>
+
+            <div class="speedo-info">
+                <div class="vehicle-status-icons">
+                    <div class="v-icon" id="v-lights">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M13 5h-2V3h2v2zm0 16h-2v-2h2v2zm9-9h-2v-2h2v2zM5 12H3v-2h2v2zm14.5-5.5l-1.41-1.41 1.41 1.41zM5.91 5.91L4.5 4.5l1.41 1.41zM18.09 18.09l1.41 1.41-1.41-1.41zM4.5 19.5l1.41-1.41L4.5 19.5z" />
+                        </svg>
+                    </div>
+                    <div class="v-icon" id="v-engine">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7 11V7c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2H9c-1.1 0-2-.9-2-2zM3 10V8c0-1.1.9-2 2-2h1v6H5c-1.1 0-2-.9-2-2z" />
+                        </svg>
+                    </div>
+                    <div class="v-icon" id="v-cruise">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6l4.7 2.8-.8 1.2L11 12V7z" />
+                        </svg>
+                    </div>
+                    <div class="v-icon" id="v-nitro">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12.75 3.33C12.54 3.12 12.28 3 12 3s-.54.12-.75.33l-5 5C6.04 8.54 6 8.76 6 9c0 .55.45 1 1 1h2v9c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-9h2c.24 0 .46-.11.63-.29.28-.31.33-.77.12-1.12l-5-5zM12 18v-4h-2v4h-2v-7H5.66L12 4.66 18.34 11H16v7h-2z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <span class="detail-label">GANG</span>
+                    <span class="detail-value" id="speedo-gear">N</span>
+                </div>
+                <div>
+                    <span class="detail-label">TANK</span>
+                    <div class="fuel-track">
+                        <div class="fuel-fill" id="speedo-fuel"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rpm-bar">
+                <div class="rpm-fill" id="speedo-rpm"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Player Info (Money, Job, ID) -->
+    <div id="player-info-container" class="player-info-container">
+        <div class="info-header">
+            <div class="job-box">
+                <span class="job-name" id="job-name">Arbeitslos</span>
+                <span class="job-rank" id="job-rank"></span>
+            </div>
+            <div class="server-id-box">
+                <span class="id-label">ID</span>
+                <span class="id-value" id="player-id">0</span>
+            </div>
+        </div>
+
+        <div class="money-box">
+            <div class="money-item cash-item" id="cash-container">
+                <span class="money-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 8h2v8H5zm7 0H9c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h3c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 6h-1v-4h1v4zm7-6h-3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h3c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 6h-1v-4h1v4z"/><path d="M2 4v16h20V4H2zm18 14H4V6h16v12z"/></svg>
+                </span>
+                <span class="money-value" id="cash-value">$0</span>
+            </div>
+            <div class="money-item bank-item" id="bank-container">
+                <span class="money-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                </span>
+                <span class="money-value" id="bank-value">$0</span>
+            </div>
+            <div class="money-item black-item" id="black-money-container" style="display:none;">
+                <span class="money-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+                </span>
+                <span class="money-value" id="black-money-value">$0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weapon HUD -->
+    <div id="weapon-container" class="weapon-container" style="display:none;">
+        <div class="weapon-info">
+            <span class="weapon-icon">🔫</span>
+            <div class="ammo-box">
+                <span id="weapon-ammo">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD Settings Panel -->
+    <div class="hud-settings-overlay" id="hud-settings-overlay" style="display:none;">
+        <div class="hud-settings-panel">
+            <div class="settings-title">HUD Einstellungen</div>
+            <div class="settings-list">
+                <label class="setting-item">
+                    <span>Benachrichtigungen stummschalten (DND)</span>
+                    <input type="checkbox" id="set-dnd">
+                </label>
+                <label class="setting-item">
+                    <span>Cinematic Mode</span>
+                    <input type="checkbox" id="set-cinematic">
+                </label>
+                <label class="setting-item">
+                    <span>FPS / Performance Mode</span>
+                    <input type="checkbox" id="set-fps">
+                </label>
+                <label class="setting-item">
+                    <span>Spieler-Info anzeigen</span>
+                    <input type="checkbox" id="set-player-info" checked>
+                </label>
+                <label class="setting-item">
+                    <span>Logo anzeigen</span>
+                    <input type="checkbox" id="set-logo" checked>
+                </label>
+                <label class="setting-item">
+                    <span>Kompass anzeigen</span>
+                    <input type="checkbox" id="set-compass" checked>
+                </label>
+                <label class="setting-item">
+                    <span>Stress auto. ausblenden</span>
+                    <input type="checkbox" id="set-stress-autohide" checked>
+                </label>
+                <label class="setting-item">
+                    <span>Kompaktmodus</span>
+                    <input type="checkbox" id="set-compact">
+                </label>
+            </div>
+            <button class="settings-btn edit-mode-btn" id="edit-mode-btn">EDIT MODE (DRAG & DROP)</button>
+            <button class="settings-close-btn" id="settings-close-btn">Schließen</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

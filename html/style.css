@@ -1,0 +1,868 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* =============================================
+   CSS CUSTOM PROPERTIES (Color Skinning Basis)
+   ============================================= */
+:root {
+    --accent:      #00ffff; /* Cyberpunk Cyan */
+    --accent-glow: rgba(0, 255, 255, 0.8);
+    --danger:      #ff0055; /* Neon Pink */
+    --warning:     #f39c12; /* Neon Yellow */
+    --success:     #39ff14; /* Neon Green */
+    --ui-bg:       rgba(10, 10, 15, 0.75);
+    --ui-border:   rgba(0, 255, 255, 0.8);
+}
+
+html,
+body {
+    width: 100vw;
+    height: 100vh;
+    /* rgba(0,0,0,0) statt "transparent" — robuster in FiveM NUI Chromium */
+    background-color: rgba(0, 0, 0, 0) !important;
+    background: rgba(0, 0, 0, 0) !important;
+    overflow: hidden;
+    font-family: 'Rajdhani', sans-serif;
+    color: #fff;
+    user-select: none;
+}
+
+/* =============================================
+   DIRECTION & COMPASS (Immersion Update)
+   ============================================= */
+.direction-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 15px;
+    transform: skewX(-12deg);
+    border-left: 3px solid #0084ff;
+    padding-left: 15px;
+    background: linear-gradient(90deg, rgba(0, 132, 255, 0.1), transparent);
+}
+
+.street-name {
+    font-size: 20px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.zone-name {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.compass-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.compass-degree {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0084ff;
+}
+
+.compass-dir {
+    font-size: 18px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.hud-container {
+    position: fixed;
+    bottom: 25px;
+    left: 285px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.status-bars-row {
+    display: flex;
+    gap: 12px;
+}
+
+.status-bar {
+    background: rgba(10, 15, 25, 0.55);
+    border: 1.5px solid rgba(0, 132, 255, 0.6);
+    border-radius: 6px;
+    padding: 12px 10px;
+    min-width: 80px;
+    box-shadow: 0 0 20px rgba(0, 132, 255, 0.25);
+}
+
+.bar-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: skewX(12deg);
+}
+
+.bar-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.bar-track {
+    width: 55px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    transform: skewX(12deg);
+}
+
+.bar-fill {
+    height: 100%;
+    background: #0084ff;
+    transition: width 0.6s ease;
+}
+
+.speedo-container {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.speedo-glass {
+    background: rgba(10, 15, 25, 0.65);
+    border-right: 6px solid #0084ff;
+    border-left: 1.5px solid rgba(0, 132, 255, 0.3);
+    border-top: 1.5px solid rgba(0, 132, 255, 0.3);
+    border-bottom: 3px solid rgba(0, 132, 255, 0.4);
+    border-radius: 10px 0 20px 0;
+    padding: 25px 40px;
+    min-width: 260px;
+}
+
+.speedo-number {
+    font-size: 72px;
+    font-weight: 900;
+    color: #fff;
+}
+
+.speedo-unit {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0084ff;
+}
+
+/* Hidden state (used by JS for HUD/Speedo toggle) */
+.hidden {
+    opacity: 0 !important;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+/* Bar value label */
+.bar-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    display: block;
+    margin: 2px 0;
+}
+
+/* Colored bar fills */
+.health-fill {
+    background: #ff4757;
+}
+
+.armor-fill {
+    background: #a4b0be;
+}
+
+.hunger-fill {
+    background: #ffa502;
+}
+
+.thirst-fill {
+    background: #1e90ff;
+}
+
+.stress-fill {
+    background: #ff6b81;
+}
+
+/* Low state pulsing */
+.status-bar.low .bar-fill {
+    animation: pulse 1s ease infinite;
+}
+
+/* Changed state anim (Triggered by JS) */
+.status-bar.changed {
+    animation: glow-in 0.6s ease;
+    border-color: #00e5ff !important;
+}
+
+@keyframes glow-in {
+    0% {
+        transform: skewX(-12deg) scale(1);
+        box-shadow: 0 0 0 rgba(0, 132, 255, 0);
+    }
+
+    50% {
+        transform: skewX(-12deg) scale(1.05);
+        box-shadow: 0 0 25px rgba(0, 132, 255, 0.6);
+    }
+
+    100% {
+        transform: skewX(-12deg) scale(1);
+        box-shadow: 0 0 15px rgba(0, 132, 255, 0.2);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+/* Branding */
+.hud-branding {
+    margin-bottom: 4px;
+}
+
+.hud-logo {
+    height: 28px;
+    opacity: 0.8;
+}
+
+/* Seatbelt indicator */
+.seatbelt-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(10, 15, 25, 0.55);
+    border: 1.5px solid rgba(0, 132, 255, 0.6);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 0 20px rgba(0, 132, 255, 0.25);
+    align-self: flex-start;
+}
+
+.seatbelt-indicator.on {
+    border-color: rgba(46, 213, 115, 0.8);
+    color: #2ed573;
+}
+
+.seatbelt-indicator.off {
+    border-color: rgba(255, 71, 87, 0.8);
+    color: #ff4757;
+}
+
+/* Speedo layout */
+.speedo-speed {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.speedo-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.vehicle-status-icons {
+    display: flex;
+    gap: 10px;
+    margin-right: 15px;
+}
+
+.v-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.2;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
+}
+
+.v-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.v-icon.active {
+    opacity: 1;
+}
+
+#v-lights.active {
+    color: #0084ff;
+    filter: drop-shadow(0 0 8px #0084ff);
+}
+
+#v-engine.active {
+    color: #ff4757;
+    filter: drop-shadow(0 0 8px #ff4757);
+}
+
+#v-cruise.active {
+    color: #2ed573;
+    filter: drop-shadow(0 0 8px #2ed573);
+}
+
+.detail-label {
+    font-size: 11px;
+    color: #0084ff;
+    font-weight: 600;
+    display: block;
+    letter-spacing: 1px;
+}
+
+.detail-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.fuel-track {
+    width: 60px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.fuel-fill {
+    height: 100%;
+    background: #2ed573;
+    transition: width 0.6s ease;
+}
+
+.rpm-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.rpm-fill {
+    height: 100%;
+    background: #0084ff;
+    transition: width 0.1s ease;
+}
+
+/* =============================================
+   GLASSMORPHISM
+   ============================================= */
+/* backdrop-filter entfernt: FiveM NUI Chromium hat keinen Zugriff
+   auf den Game-Framebuffer — blur() erzeugt schwarze Artefakte.
+   Der Glaseffekt kommt stattdessen nur über rgba-Hintergründe. */
+
+/* =============================================
+   WAYPOINT GPS
+   ============================================= */
+.waypoint-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.waypoint-dist {
+    font-size: 15px;
+    font-weight: 800;
+    color: #2ed573;
+    text-shadow: 0 0 8px rgba(46, 213, 115, 0.4);
+}
+
+.waypoint-label {
+    font-size: 10px;
+    color: #0084ff;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+/* =============================================
+   VOICE RANGE BAR
+   ============================================= */
+.voice-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(10, 15, 25, 0.55);
+    border: 1.5px solid rgba(0, 132, 255, 0.4);
+    border-radius: 6px;
+    padding: 6px 10px;
+    align-self: flex-start;
+}
+
+.voice-label {
+    font-size: 9px;
+    color: #0084ff;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.voice-segments {
+    display: flex;
+    gap: 3px;
+}
+
+.voice-seg {
+    width: 14px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.voice-seg.active.whisper {
+    background: #2ed573;
+    box-shadow: 0 0 6px rgba(46, 213, 115, 0.7);
+}
+
+.voice-seg.active.normal {
+    background: #0084ff;
+    box-shadow: 0 0 6px rgba(0, 132, 255, 0.7);
+}
+
+.voice-seg.active.shout {
+    background: #ff4757;
+    box-shadow: 0 0 6px rgba(255, 71, 87, 0.7);
+}
+
+.voice-mode-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.mic-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.08s ease, box-shadow 0.08s ease;
+    flex-shrink: 0;
+}
+
+.mic-dot.talking {
+    background: #2ed573;
+    box-shadow: 0 0 7px rgba(46, 213, 115, 0.9);
+}
+
+.mic-dot.talking.radio {
+    background: #ffa502;
+    box-shadow: 0 0 7px rgba(255, 165, 2, 0.9);
+}
+
+/* =============================================
+   HUD SETTINGS PANEL
+   ============================================= */
+.hud-settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+}
+
+.hud-settings-panel {
+    background: rgba(10, 15, 25, 0.92);
+    border: 1.5px solid rgba(0, 132, 255, 0.6);
+    border-radius: 12px;
+    padding: 28px 32px;
+    min-width: 300px;
+    box-shadow: 0 0 50px rgba(0, 132, 255, 0.2);
+}
+
+.settings-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0084ff;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 22px;
+    text-align: center;
+}
+
+.settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 20px;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-item span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.setting-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #0084ff;
+}
+
+.settings-close-btn {
+    width: 100%;
+    padding: 10px;
+    background: rgba(0, 132, 255, 0.15);
+    border: 1px solid rgba(0, 132, 255, 0.6);
+    border-radius: 6px;
+    color: #0084ff;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-close-btn:hover {
+    background: rgba(0, 132, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 132, 255, 0.3);
+}
+
+/* =============================================
+   PLAYER INFO (MONEY, JOB, ID)
+   ============================================= */
+.player-info-container {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+    pointer-events: none;
+    align-items: flex-end;
+}
+
+.info-header {
+    display: flex;
+    gap: 15px;
+    align-items: stretch;
+}
+
+.job-box {
+    background: rgba(10, 15, 25, 0.55);
+    border: 1.5px solid rgba(0, 132, 255, 0.4);
+    border-radius: 6px;
+    padding: 6px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    box-shadow: 0 0 15px rgba(0, 132, 255, 0.15);
+}
+
+.job-name {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.job-rank {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0084ff;
+    text-transform: uppercase;
+}
+
+.server-id-box {
+    background: rgba(0, 132, 255, 0.15);
+    border: 1.5px solid #0084ff;
+    border-radius: 6px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 0 15px rgba(0, 132, 255, 0.3);
+}
+
+.id-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.id-value {
+    font-size: 18px;
+    font-weight: 900;
+    color: #fff;
+}
+
+.money-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+}
+
+.money-item {
+    background: rgba(10, 15, 25, 0.55);
+    border: 1.5px solid rgba(46, 213, 115, 0.4);
+    border-radius: 6px;
+    padding: 5px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    justify-content: flex-end;
+    box-shadow: 0 0 10px rgba(46, 213, 115, 0.1);
+    transition: all 0.3s ease;
+}
+
+.money-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2ed573;
+}
+
+.money-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.money-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.money-item.cash-item {
+    border-color: rgba(46, 213, 115, 0.4);
+}
+.money-item.cash-item .money-icon {
+    color: #2ed573;
+}
+
+.money-item.bank-item {
+    border-color: rgba(0, 132, 255, 0.4);
+}
+.money-item.bank-item .money-icon {
+    color: #0084ff;
+}
+
+.money-item.black-item {
+    border-color: rgba(255, 71, 87, 0.4);
+}
+.money-item.black-item .money-icon {
+    color: #ff4757;
+}
+
+.money-item.changed {
+    animation: money-glow 0.6s ease;
+}
+
+@keyframes money-glow {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.05); filter: brightness(1.5); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* =============================================
+   NEW INDICATORS (OXYGEN, NITRO, ETC)
+   ============================================= */
+.oxygen-fill {
+    background: #00d2d3;
+}
+
+#v-nitro.active {
+    color: #ff9ff3;
+    filter: drop-shadow(0 0 8px #ff9ff3);
+}
+
+/* =============================================
+   CINEMATIC BARS
+   ============================================= */
+.cinematic-bar {
+    position: fixed;
+    left: 0;
+    width: 100vw;
+    height: 12vh;
+    background: #000;
+    z-index: 50;
+    transition: transform 1s ease-in-out;
+    pointer-events: none;
+}
+.cinematic-bar.top {
+    top: 0;
+    transform: translateY(-100%);
+}
+.cinematic-bar.bottom {
+    bottom: 0;
+    transform: translateY(100%);
+}
+.cinematic-bar.active {
+    transform: translateY(0);
+}
+
+/* =============================================
+   NOTIFICATIONS
+   ============================================= */
+.notifications-container {
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 999;
+    pointer-events: none;
+    max-width: 300px;
+}
+
+.notify-item {
+    background: rgba(10, 15, 25, 0.85);
+    border-left: 4px solid #0084ff;
+    border-radius: 4px 6px 6px 4px;
+    padding: 12px 16px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: translateX(-120%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+}
+
+.notify-item.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notify-item.hide {
+    transform: translateX(-120%);
+    opacity: 0;
+}
+
+.notify-item.type-success {
+    border-left-color: #2ed573;
+    box-shadow: 0 0 15px rgba(46, 213, 115, 0.2);
+}
+
+.notify-item.type-error {
+    border-left-color: #ff4757;
+    box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
+}
+
+/* FPS Mode Optimization */
+.fps-mode * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+}
+
+/* =============================================
+   WEAPON HUD (Cyberpunk Style)
+   ============================================= */
+.weapon-container {
+    position: fixed;
+    right: 25px;
+    bottom: 120px; /* Over speedo */
+    background: var(--ui-bg);
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 15px;
+    transform: skewX(-12deg);
+    box-shadow: 0 0 15px var(--accent-glow);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 10;
+}
+
+.weapon-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: skewX(12deg);
+}
+
+.weapon-icon {
+    font-size: 24px;
+    filter: drop-shadow(0 0 5px var(--accent));
+}
+
+.ammo-box {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--danger);
+    text-shadow: 0 0 8px var(--danger);
+}
+
+/* =============================================
+   EDIT MODE (Drag & Drop)
+   ============================================= */
+.edit-mode-active .hud-container *,
+.edit-mode-active .weapon-container * {
+    pointer-events: none !important;
+}
+
+.edit-mode-active .draggable {
+    pointer-events: auto !important;
+    cursor: move !important;
+    outline: 2px dashed #ff0055 !important;
+    outline-offset: 4px;
+    background: rgba(255, 0, 85, 0.1) !important;
+    position: fixed !important;
+}
+
+.edit-mode-active .hud-settings-overlay * {
+    pointer-events: auto !important;
+}
+
+.draggable {
+    position: fixed !important;
+}
