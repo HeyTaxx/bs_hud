@@ -1,4 +1,3 @@
-local BSAnticheat = exports.bs_anticheat:getSafeNatives()
 local Framework = Config.Framework or 'esx'
 local ESX = nil
 local QBCore = nil
@@ -22,7 +21,7 @@ local currentVoiceRange = 'normal'
 
 CreateThread(function()
     Wait(1000)
-    BSAnticheat.DisplayRadar(false)
+    DisplayRadar(false)
 
     if Framework == 'esx' then
         while ESX.GetPlayerData().job == nil do Wait(100) end
@@ -129,7 +128,7 @@ CreateThread(function()
 
         if not shouldShow then 
             if lastRadarState then
-                BSAnticheat.DisplayRadar(false)
+                DisplayRadar(false)
                 lastRadarState = false
             end
             goto continue 
@@ -155,7 +154,7 @@ CreateThread(function()
         end
 
         if currentRadarState ~= lastRadarState then
-            BSAnticheat.DisplayRadar(currentRadarState)
+            DisplayRadar(currentRadarState)
             lastRadarState = currentRadarState
         end
 
