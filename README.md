@@ -30,6 +30,9 @@ The `config.lua` file contains numerous settings including:
 - Keybinds (e.g., Seatbelt).
 - Map shape and localization strings.
 
+## Other information:
+Don't forget to check out our website: https://bluestyle.dev for more free products!
+
 ## License
 
 This resource is provided **free to use on FiveM servers**. 
