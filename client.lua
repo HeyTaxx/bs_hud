@@ -20,12 +20,8 @@ local wasShooting = false
 local lastData = {}
 local currentVoiceRange = 'normal'
 
--- =============================================
--- INITIALISIERUNG
--- =============================================
 CreateThread(function()
     Wait(1000)
-    -- Standard-Radar ausblenden
     BSAnticheat.DisplayRadar(false)
 
     if Framework == 'esx' then
@@ -36,7 +32,6 @@ CreateThread(function()
         playerData = QBCore.Functions.GetPlayerData()
     end
     
-    -- Map Shape Setup
     if Config.MapShape == 'circle' then
         SetMinimapClipType(1)
         SetMinimapComponentPosition("minimap", "L", "B", 0.025, -0.05, 0.153, 0.24)
@@ -46,12 +41,10 @@ CreateThread(function()
         SetMinimapClipType(0)
     end
 
-    -- HUD einmalig initialisieren
     SendNUIMessage({ type = 'initData', locales = Config.Locales })
     SendNUIMessage({ type = 'toggleHud', show = true })
 end)
 
--- ESX Events
 RegisterNetEvent('esx:playerLoaded')
 AddEventHandler('esx:playerLoaded', function(xPlayer)
     if Framework == 'esx' then playerData = xPlayer end
@@ -74,7 +67,6 @@ AddEventHandler('esx:setAccountMoney', function(account)
     end
 end)
 
--- QB Events
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     if Framework == 'qb' then playerData = QBCore.Functions.GetPlayerData() end
 end)
@@ -87,9 +79,6 @@ RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
     if Framework == 'qb' then playerData = val end
 end)
 
--- =============================================
--- STATUS UPDATES (Getrennt vom Haupt-Loop für Stabilität)
--- =============================================
 local currentHunger, currentThirst = 100, 100
 CreateThread(function()
     while true do
@@ -99,13 +88,10 @@ CreateThread(function()
         TriggerEvent('esx_status:getStatus', 'thirst', function(status)
             if status then currentThirst = math.floor(status.getPercent()) end
         end)
-        Wait(1000) -- Status muss nicht alle 200ms geprüft werden
+        Wait(1000)
     end
 end)
 
--- =============================================
--- HAUPT-UPDATE LOOP
--- =============================================
 CreateThread(function()
     local lastInVehicle = false
     local lastRadarState = false
@@ -131,7 +117,6 @@ CreateThread(function()
         local isPaused = IsPauseMenuActive()
         local isAiming = IsPlayerFreeAiming(PlayerId())
 
-        -- HUD Sichtbarkeit
         local shouldShow = true
         if Config.HideOnDeath and isDead then shouldShow = false end
         if Config.HideOnPause and isPaused then shouldShow = false end
@@ -150,20 +135,18 @@ CreateThread(function()
             goto continue 
         end
 
-        -- Fahrzeug-Check
         local inVehicle = IsPedInAnyVehicle(ped, false)
         if inVehicle ~= isInVehicle then
             isInVehicle = inVehicle
             if not inVehicle then
                 isSeatbeltOn = false
                 SendNUIMessage({ type = 'seatbelt', active = false })
-                SetPedConfigFlag(ped, 32, true) -- Reset flag when exiting
+                SetPedConfigFlag(ped, 32, true)
             else
-                SetPedConfigFlag(ped, 32, true) -- Reset flag when entering just in case
+                SetPedConfigFlag(ped, 32, true)
             end
         end
 
-        -- Minimap-Steuerung (Nur callen wenn nötig)
         local currentRadarState = false
         if Config.MinimapInVehicle and inVehicle then
             currentRadarState = true
@@ -176,7 +159,6 @@ CreateThread(function()
             lastRadarState = currentRadarState
         end
 
-        -- Speedometer
         local speed = 0
         local rpm = 0
         local gear = 0
@@ -195,14 +177,12 @@ CreateThread(function()
             gear = GetVehicleCurrentGear(vehicle)
             fuel = GetVehicleFuelLevel(vehicle)
 
-            -- Vehicle Details
             local _, lights, highbeams = GetVehicleLightsState(vehicle)
             lightsOn = (lights == 1 or highbeams == 1)
             engineHealth = GetVehicleEngineHealth(vehicle) / 10.0
             cruiseOn = (GetVehicleMaxSpeed(vehicle) < 1000.0)
         end
 
-        -- Stress-Berechnung
         if Config.EnableStress then
             local hNormal = health - 100
             if hNormal < lastHealth then
@@ -234,7 +214,6 @@ CreateThread(function()
         local zone = GetLabelText(GetNameOfZone(coords.x, coords.y, coords.z))
         local heading = GetEntityHeading(ped)
 
-        -- Wegpunkt GPS Distanz
         local waypointDist = -1
         local waypointBlip = GetFirstBlipInfoId(8)
         if DoesBlipExist(waypointBlip) then
@@ -261,7 +240,7 @@ CreateThread(function()
             if playerData.money then
                 cash = playerData.money.cash or 0
                 bank = playerData.money.bank or 0
-                blackMoney = playerData.money.crypto or 0 -- Placeholder for illegal money in QB
+                blackMoney = playerData.money.crypto or 0
             end
             jobName = (playerData.job and playerData.job.label) or Config.Locales['job_unemployed']
             jobRank = (playerData.job and playerData.job.grade and playerData.job.grade.name) or ""
@@ -276,8 +255,6 @@ CreateThread(function()
 
         local nitroActive = false
         if Config.EnableNitro and inVehicle then
-            -- Generic Nitro Placeholder. Replace with actual logic.
-            -- nitroActive = exports['nitro']:IsNitroActive()
         end
 
         local weaponHash = 0
@@ -322,7 +299,6 @@ CreateThread(function()
             weaponAmmo = weaponAmmo
         }
 
-        -- Change Detection: Nur senden wenn sich was Wichtiges geändert hat
         local shouldUpdate = false
         if not lastData.health or math.abs(newData.health - (lastData.health or 0)) > 1 then shouldUpdate = true end
         if newData.armor ~= lastData.armor then shouldUpdate = true end
@@ -348,7 +324,6 @@ CreateThread(function()
         if math.abs(newData.heading - (lastData.heading or 0)) > 2 then shouldUpdate = true end
         if math.abs(newData.waypoint - (lastData.waypoint or -1)) > 10 then shouldUpdate = true end
         
-        -- Economy/Job changes
         if newData.cash ~= lastData.cash then shouldUpdate = true end
         if newData.bank ~= lastData.bank then shouldUpdate = true end
         if newData.blackMoney ~= lastData.blackMoney then shouldUpdate = true end
@@ -365,9 +340,6 @@ CreateThread(function()
     end
 end)
 
--- =============================================
--- SEATBELT SYSTEM
--- =============================================
 if Config.EnableSeatbelt then
     RegisterKeyMapping('+bs_seatbelt', 'Anschnallgurt an/aus', 'keyboard', 'b')
     RegisterCommand('+bs_seatbelt', function()
@@ -376,7 +348,7 @@ if Config.EnableSeatbelt then
         isSeatbeltOn = not isSeatbeltOn
         SendNUIMessage({ type = 'seatbelt', active = isSeatbeltOn })
         PlaySoundFrontend(-1, "NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET", true)
-        SetPedConfigFlag(ped, 32, not isSeatbeltOn) -- false disables native flying out
+        SetPedConfigFlag(ped, 32, not isSeatbeltOn)
         
         if isSeatbeltOn then
             ESX.ShowNotification("~g~Anschnallgurt angelegt")
@@ -385,7 +357,6 @@ if Config.EnableSeatbelt then
         end
     end, false)
 
-    -- Unfall-Effekt ohne Gurt
     CreateThread(function()
         local lastSpeed = 0
         while true do
@@ -396,18 +367,15 @@ if Config.EnableSeatbelt then
                 local speed = GetEntitySpeed(vehicle) * 3.6
                 local speedDiff = lastSpeed - speed
 
-                -- Starkes Abbremsen / Aufprall
                 if speedDiff > 40 and lastSpeed > 40 then
-                    -- Spieler aus der Frontscheibe
                     local fwd = GetEntityForwardVector(vehicle)
-                    local throwVel = math.min(speedDiff / 3.6, 50.0) -- max velocity cap
+                    local throwVel = math.min(speedDiff / 3.6, 50.0)
                     SetPedToRagdoll(ped, 3000, 3000, 0, true, true, false)
                     SetEntityVelocity(ped, fwd.x * throwVel, fwd.y * throwVel, fwd.z * throwVel + 2.0)
                     TaskLeaveVehicle(ped, vehicle, 4160)
                     currentStress = math.min(100, currentStress + Config.StressMultipliers.crash)
                     ApplyDamageToPed(ped, math.floor(speedDiff * 0.5), false)
                 elseif speedDiff > 20 and lastSpeed > 20 then
-                    -- Kopf stößt
                     ShakeGameplayCam('SMALL_EXPLOSION_SHAKE', 0.3)
                     currentStress = math.min(100, currentStress + Config.StressMultipliers.crash * 0.5)
                 end
@@ -423,9 +391,6 @@ if Config.EnableSeatbelt then
     end)
 end
 
--- =============================================
--- STRESS EVENTS
--- =============================================
 RegisterNetEvent('bs_hud:addStress')
 AddEventHandler('bs_hud:addStress', function(amount)
     currentStress = math.min(100, currentStress + amount)
@@ -436,7 +401,6 @@ AddEventHandler('bs_hud:removeStress', function(amount)
     currentStress = math.max(0, currentStress - amount)
 end)
 
--- Stress-Event bei Essen/Trinken
 local lastHungerTick, lastThirstTick = 100, 100
 
 local function statusToPercent(status)
@@ -466,9 +430,6 @@ AddEventHandler('esx_status:onTick', function(statuses)
     end
 end)
 
--- =============================================
--- EXPORTS
--- =============================================
 exports('GetStress', function()
     return currentStress
 end)
@@ -481,12 +442,6 @@ exports('IsHudVisible', function()
     return isHudVisible
 end)
 
--- =============================================
--- VOICE RANGE (pma-voice)
--- =============================================
--- pma-voice feuert 'setTalkingMode' mit Mode-Index:
---   1 = Whisper, 2 = Normal, 3 = Shouting
---   (definiert in Cfg.voiceModes in shared.lua)
 local function updateVoiceMode(modeIndex)
     if type(modeIndex) ~= 'number' then return end
     local mode
@@ -507,9 +462,6 @@ AddEventHandler('pma-voice:setTalkingMode', function(newTalkingRange)
     updateVoiceMode(newTalkingRange)
 end)
 
--- =============================================
--- HUD EINSTELLUNGEN MENÜ (/hud)
--- =============================================
 RegisterCommand('hud', function()
     SendNUIMessage({ type = 'openSettings' })
     SetNuiFocus(true, true)
@@ -524,9 +476,6 @@ exports('IsSeatbeltOn', function()
     return isSeatbeltOn
 end)
 
--- =============================================
--- CUSTOM NOTIFICATION SYSTEM
--- =============================================
 local function SendNotification(type, message, time)
     SendNUIMessage({
         type = 'notify',
@@ -543,10 +492,8 @@ AddEventHandler('bs_hud:notify', function(type, message, time)
     SendNotification(type, message, time)
 end)
 
--- Überschreibe ESX Notifications
 RegisterNetEvent('esx:showNotification')
 AddEventHandler('esx:showNotification', function(text, type, length)
-    -- ESX sendet oft type als boolean oder string
     local nType = 'normal'
     if type == 'error' or type == '~r~' then nType = 'error'
     elseif type == 'success' or type == '~g~' then nType = 'success'
@@ -554,7 +501,6 @@ AddEventHandler('esx:showNotification', function(text, type, length)
     SendNotification(nType, text, length)
 end)
 
--- Überschreibe QB Notifications
 RegisterNetEvent('QBCore:Notify')
 AddEventHandler('QBCore:Notify', function(text, type, length)
     local nType = 'normal'
